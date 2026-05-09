@@ -43,6 +43,24 @@ public class ReservationService {
         return reservationRepository.findAll();
     }
 
+    public List<com.example.carrental.api.CarAvailabilityResponse> getCarAvailability() {
+        return java.util.Arrays.stream(CarType.values())
+                .map(carType -> {
+                    int totalCars = carInventory.carsOfType(carType).size();
+                    long bookedCars = reservationRepository.findByCarType(carType).stream()
+                            .map(r -> r.car().id())
+                            .distinct()
+                            .count();
+                    return new com.example.carrental.api.CarAvailabilityResponse(
+                            carType,
+                            totalCars,
+                            totalCars - (int) bookedCars,
+                            (int) bookedCars
+                    );
+                })
+                .toList();
+    }
+
     private boolean isAvailable(
             Car car,
             List<Reservation> existingReservations,
